@@ -73,6 +73,13 @@ impl Server {
             }
         };
         let status = response.status();
+        // A 204 or 304 reply has no body. Do not read one: some servers send no length for it.
+        if status == 204 || status == 304 {
+            return Ok(Reply {
+                status,
+                body: Value::Null,
+            });
+        }
         let text = response
             .into_string()
             .map_err(|e| format!("The server reply was cut off ({e}). Try again."))?;
